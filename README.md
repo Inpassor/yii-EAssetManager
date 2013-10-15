@@ -35,6 +35,7 @@ See code of EAssetManager.php to read description of public properties.
 
 
 USAGE
+=====
 
 CHtml::asset(Yii::app()->basePath.'/vendors/bootstrap/less/bootstrap.less');
 
