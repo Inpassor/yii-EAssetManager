@@ -15,7 +15,7 @@
 
 INSTALLATION
 
-1. Copy EAssetManager.php to /protected/extensions directory
+1. Copy EAssetManager.php to /protected/extensions/ directory
 2. Download the latest version of lessphp from http://leafo.net/lessphp and put lessc.inc.php file under /protected/extensions/EAssetManager/ directory
 3. Add or replace the assetManager component in /protected/config/main.php like that:
 
@@ -35,11 +35,11 @@ INSTALLATION
 
 	),
 
+See code of EAssetManager.php to read description of public properties.
+
 4. CHMOD 'lessCompiledPath' directory to 777 in order to create new files there by EAssetManager.
 5. Optional: enable Yii caching. Otherwise, EAssetManager will try to create directory /protected/extensions/EAssetManager/cache/ and store cache data there.
 In this case plese ensure that directory /protected/extensions/EAssetManager/cache/ has CHMOD 777.
-
-See code of EAssetManager.php to read description of public properties.
 
 
 USAGE
