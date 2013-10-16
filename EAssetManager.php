@@ -72,7 +72,7 @@ class EAssetManager extends CAssetManager
 	{
 		if ($this->lessCompile)
 		{
-			require_once(dirname(__FILE__).'/EAssetManager/lessc.inc.php');
+			require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'lessc.inc.php');
 		}
 		if (!$this->lessCompiledPath)
 		{
@@ -91,7 +91,7 @@ class EAssetManager extends CAssetManager
 			{
 				case 'less':
 				{
-					$path=$this->lessCompiledPath.'/'.basename($src,'.less').'.css';
+					$path=$this->lessCompiledPath.DIRECTORY_SEPARATOR.basename($src,'.less').'.css';
 					$lessCompile=false;
 					if (!$this->lessForceCompile&&$this->lessCompile)
 					{
@@ -141,7 +141,7 @@ class EAssetManager extends CAssetManager
 		}
 		else
 		{
-			return realpath(Yii::app()->basePath.'/../assets');
+			return realpath(Yii::app()->basePath.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'assets');
 		}
 	}
 
@@ -152,11 +152,11 @@ class EAssetManager extends CAssetManager
 		{
 			return Yii::app()->cache->set($name,$value);
 		}
-		if (!file_exists(dirname(__FILE__).'/EAssetManager/cache'))
+		if (!file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'cache'))
 		{
-			mkdir(dirname(__FILE__).'/EAssetManager/cache');
+			mkdir(dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'cache');
 		}
-		return file_put_contents(dirname(__FILE__).'/EAssetManager/cache/'.md5($name),serialize($value),LOCK_EX);
+		return file_put_contents(dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.md5($name).'.bin',serialize($value),LOCK_EX);
 	}
 
 
@@ -166,9 +166,9 @@ class EAssetManager extends CAssetManager
 		{
 			return Yii::app()->cache->get($name);
 		}
-		if (file_exists(dirname(__FILE__).'/EAssetManager/cache/'.md5($name)))
+		if (file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.md5($name)))
 		{
-			return unserialize(file_get_contents(dirname(__FILE__).'/EAssetManager/cache/'.md5($name)));
+			return unserialize(file_get_contents(dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.md5($name).'.bin'));
 		}
 		return false;
 	}
