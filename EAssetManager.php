@@ -8,7 +8,7 @@
  * @author Inpassor <inpassor@gmail.com>
  * @link https://github.com/Inpassor/yii-EAssetManager
  *
- * @version 0.11 (2013.10.15)
+ * @version 0.2 (2013.10.15)
  */
 
 /*
@@ -68,6 +68,66 @@ class EAssetManager extends CAssetManager
 	public $lessCompile=true;
 
 
+	public function init()
+	{
+		if ($this->lessCompile)
+		{
+			require_once(dirname(__FILE__).'/EAssetManager/lessc.inc.php');
+		}
+		if (!$this->lessCompiledPath)
+		{
+			$this->lessCompiledPath='application.assets.css';
+		}
+		$this->lessCompiledPath=$this->_getPath($this->lessCompiledPath);
+		parent::init();
+	}
+
+
+	public function publish($path,$hashByName=false,$level=-1,$forceCopy=null)
+	{
+		if (($src=realpath($path))!==false)
+		{
+			switch (pathinfo($src,PATHINFO_EXTENSION))
+			{
+				case 'less':
+				{
+					$path=$this->lessCompiledPath.'/'.basename($src,'.less').'.css';
+					$lessCompile=false;
+					if (!$this->lessForceCompile&&$this->lessCompile)
+					{
+						$lessFiles=$this->_cacheGet('EAssetManager-less-updated-'.$src);
+						if ($lessFiles&&is_array($lessFiles))
+						{
+							foreach ($lessFiles as $_file=>$_time)
+							{
+								if (filemtime($_file)!=$_time)
+								{
+									$lessCompile=true;
+									break;
+								}
+							}
+						}
+						else
+						{
+							$lessCompile=true;
+						}
+						unset($lessFiles);
+					}
+					if (!file_exists($path)||$lessCompile||$this->lessForceCompile)
+					{
+						$lessc=new lessc();
+						$lessc->setFormatter($this->lessFormatter);
+						$lessCache=$lessc->cachedCompile($src);
+						file_put_contents($path,$lessCache['compiled']);
+						$this->_cacheSet('EAssetManager-less-updated-'.$src,$lessCache['files']);
+					}
+				}
+			}
+		}
+		return parent::publish($path,$hashByName,$level,$forceCopy);
+	}
+
+
 	private function _getPath($path)
 	{
 		$alias=YiiBase::getPathOfAlias($path);
@@ -85,64 +145,34 @@ class EAssetManager extends CAssetManager
 		}
 	}
 
-	public function init()
-	{
-		if ($this->lessCompile)
-		{
-			require_once(dirname(__FILE__).'/EAssetManager/lessc.inc.php');
-		}
-		if (!$this->lessCompiledPath)
-		{
-			$this->lessCompiledPath='application.assets.css';
-		}
-		$this->lessCompiledPath=$this->_getPath($this->lessCompiledPath);
 
-		parent::init();
+	private function _cacheSet($name,$value)
+	{
+		if (Yii::app()->cache)
+		{
+			return Yii::app()->cache->set($name,$value);
+		}
+		if (!file_exists(dirname(__FILE__).'/EAssetManager/cache'))
+		{
+			mkdir(dirname(__FILE__).'/EAssetManager/cache');
+		}
+		return file_put_contents(dirname(__FILE__).'/EAssetManager/cache/'.md5($name),serialize($value),LOCK_EX);
 	}
 
 
-	public function publish($path,$hashByName=false,$level=-1,$forceCopy=null)
+	private function _cacheGet($name)
 	{
-		if (($src=realpath($path))!==false)
+		if (Yii::app()->cache)
 		{
-			switch (pathinfo($src,PATHINFO_EXTENSION))
-			{
-				case 'less':
-				{
-					$path=$this->lessCompiledPath.'/'.basename($src,'.less').'.css';
-
-					$lessCompile=false;
-
-					if (!$this->lessForceCompile&&$this->lessCompile)
-					{
-						$lessFiles=Yii::app()->cache->get('EAssetManager-less-updated-'.$src);
-						if ($lessFiles&&is_array($lessFiles))
-						{
-							foreach ($lessFiles as $_file=>$_time)
-							{
-								if (filemtime($_file)!=$_time)
-								{
-									$lessCompile=true;
-									break;
-								}
-							}
-					}
-						unset($lessFiles);
-					}
-
-					if (!file_exists($path)||$lessCompile||$this->lessForceCompile)
-					{
-						$lessc=new lessc();
-						$lessc->setFormatter($this->lessFormatter);
-						$lessCache=$lessc->cachedCompile($src);
-						file_put_contents($path,$lessCache['compiled']);
-						Yii::app()->cache->set('EAssetManager-less-updated-'.$src,$lessCache['files']);
-					}
-				}
-			}
+			return Yii::app()->cache->get($name);
 		}
-		return parent::publish($path,$hashByName,$level,$forceCopy);
+		if (file_exists(dirname(__FILE__).'/EAssetManager/cache/'.md5($name)))
+		{
+			return unserialize(file_get_contents(dirname(__FILE__).'/EAssetManager/cache/'.md5($name)));
+		}
+		return false;
 	}
+
 }
 
 ?>
