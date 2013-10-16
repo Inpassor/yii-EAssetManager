@@ -8,7 +8,7 @@
  * @author Inpassor <inpassor@gmail.com>
  * @link https://github.com/Inpassor/yii-EAssetManager
  *
- * @version 0.2 (2013.10.15)
+ * @version 0.2 (2013.10.16)
  */
 
 /*
@@ -44,9 +44,22 @@ See code of EAssetManager.php to read description of public properties.
 
 USAGE
 
-CHtml::asset(Yii::app()->basePath.'/vendors/bootstrap/less/bootstrap.less');
+Just publish .less file with assetManager like that:
+
+$css = CHtml::asset(Yii::app()->basePath.'/vendors/bootstrap/less/bootstrap.less');
 
 That's all :)
+
+
+Also it might be useful to pre-compile .less files. For example, to make command which compiles .less files in background.
+In this case you can use "lessCompile" method:
+
+Yii::app()->assetManager->lessCompile(Yii::app()->basePath.'/vendors/bootstrap/less/bootstrap.less');
+
+Next, add already compiled file in your application:
+
+$css = CHtml::asset(Yii::app()->basePath.'/assets/css/bootstrap.css');
+
 
 */
 
@@ -96,40 +109,47 @@ class EAssetManager extends CAssetManager
 			{
 				case 'less':
 				{
-					$path=$this->lessCompiledPath.DIRECTORY_SEPARATOR.basename($src,'.less').'.css';
-					$lessCompile=false;
-					if (!$this->lessForceCompile&&$this->lessCompile)
-					{
-						$lessFiles=$this->_cacheGet('EAssetManager-less-updated-'.$src);
-						if ($lessFiles&&is_array($lessFiles))
-						{
-							foreach ($lessFiles as $_file=>$_time)
-							{
-								if (filemtime($_file)!=$_time)
-								{
-									$lessCompile=true;
-									break;
-								}
-							}
-						}
-						else
-						{
-							$lessCompile=true;
-						}
-						unset($lessFiles);
-					}
-					if (!file_exists($path)||$lessCompile||$this->lessForceCompile)
-					{
-						$lessc=new lessc();
-						$lessc->setFormatter($this->lessFormatter);
-						$lessCache=$lessc->cachedCompile($src);
-						file_put_contents($path,$lessCache['compiled']);
-						$this->_cacheSet('EAssetManager-less-updated-'.$src,$lessCache['files']);
-					}
+					$path=$this->lessCompile($src);
 				}
 			}
 		}
 		return parent::publish($path,$hashByName,$level,$forceCopy);
+	}
+
+
+	public function lessCompile($src)
+	{
+		$path=$this->lessCompiledPath.DIRECTORY_SEPARATOR.basename($src,'.less').'.css';
+		$lessCompile=false;
+		if (!$this->lessForceCompile&&$this->lessCompile)
+		{
+			$lessFiles=$this->_cacheGet('EAssetManager-less-updated-'.$src);
+			if ($lessFiles&&is_array($lessFiles))
+			{
+				foreach ($lessFiles as $_file=>$_time)
+				{
+					if (filemtime($_file)!=$_time)
+					{
+						$lessCompile=true;
+						break;
+					}
+				}
+			}
+			else
+			{
+				$lessCompile=true;
+			}
+			unset($lessFiles);
+		}
+		if (!file_exists($path)||$lessCompile||$this->lessForceCompile)
+		{
+			$lessc=new lessc();
+			$lessc->setFormatter($this->lessFormatter);
+			$lessCache=$lessc->cachedCompile($src);
+			file_put_contents($path,$lessCache['compiled']);
+			$this->_cacheSet('EAssetManager-less-updated-'.$src,$lessCache['files']);
+		}
+		return $path;
 	}
 
 
