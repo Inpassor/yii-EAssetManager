@@ -31,6 +31,10 @@ INSTALLATION
 
 	),
 
+4. CHMOD 'lessCompiledPath' directory to 777 in order to create new files there by EAssetManager.
+5. Optional: enable Yii caching. Otherwise, EAssetManager will try to create directory /protected/extensions/EAssetManager/cache/ and store cache data there.
+In this case plese ensure that directory /protected/extensions/EAssetManager/cache/ has CHMOD 777.
+
 See code of EAssetManager.php to read description of public properties.
 
 
