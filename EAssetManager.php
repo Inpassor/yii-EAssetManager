@@ -8,7 +8,7 @@
  * @author Inpassor <inpassor@gmail.com>
  * @link https://github.com/Inpassor/yii-EAssetManager
  *
- * @version 0.1 (2013.10.15)
+ * @version 0.11 (2013.10.15)
  */
 
 /*
@@ -47,8 +47,6 @@ That's all :)
 */
 
 
-require_once(dirname(__FILE__).'/EAssetManager/lessc.inc.php');
-
 class EAssetManager extends CAssetManager
 {
 
@@ -70,10 +68,7 @@ class EAssetManager extends CAssetManager
 	public $lessCompile=true;
 
 
-	private $lessc=null;
-
-
-	private function _getPath($path=null)
+	private function _getPath($path)
 	{
 		$alias=YiiBase::getPathOfAlias($path);
 		if ($alias)
@@ -92,15 +87,15 @@ class EAssetManager extends CAssetManager
 
 	public function init()
 	{
+		if ($this->lessCompile)
+		{
+			require_once(dirname(__FILE__).'/EAssetManager/lessc.inc.php');
+		}
 		if (!$this->lessCompiledPath)
 		{
 			$this->lessCompiledPath='application.assets.css';
 		}
-
 		$this->lessCompiledPath=$this->_getPath($this->lessCompiledPath);
-
-		$this->lessc=new lessc;
-		$this->lessc->setFormatter($this->lessFormatter);
 
 		parent::init();
 	}
@@ -110,35 +105,39 @@ class EAssetManager extends CAssetManager
 	{
 		if (($src=realpath($path))!==false)
 		{
-			if (pathinfo($src,PATHINFO_EXTENSION)=='less')
+			switch (pathinfo($src,PATHINFO_EXTENSION))
 			{
-				$fileName=basename($src,'.less').'.css';
-				$path=$this->lessCompiledPath.'/'.$fileName;
-
-				$lessCompile=false;
-
-				if (!$this->lessForceCompile&&$this->lessCompile)
+				case 'less':
 				{
-					$lessFiles=Yii::app()->cache->get('less-compiler-'.$src.'-updated');
-					if ($lessFiles&&is_array($lessFiles))
+					$path=$this->lessCompiledPath.'/'.basename($src,'.less').'.css';
+
+					$lessCompile=false;
+
+					if (!$this->lessForceCompile&&$this->lessCompile)
 					{
-						foreach ($lessFiles as $_file=>$_time)
+						$lessFiles=Yii::app()->cache->get('EAssetManager-less-updated-'.$src);
+						if ($lessFiles&&is_array($lessFiles))
 						{
-							if (filemtime($_file)!=$_time)
+							foreach ($lessFiles as $_file=>$_time)
 							{
-								$lessCompile=true;
-								break;
+								if (filemtime($_file)!=$_time)
+								{
+									$lessCompile=true;
+									break;
+								}
 							}
-						}
-				}
-					unset($lessFiles);
-				}
+					}
+						unset($lessFiles);
+					}
 
-				if (!file_exists($path)||$lessCompile||$this->lessForceCompile)
-				{
-					$lessCache=$this->lessc->cachedCompile($src);
-					file_put_contents($path,$lessCache['compiled']);
-					Yii::app()->cache->set('less-compiler-'.$src.'-updated',$lessCache['files']);
+					if (!file_exists($path)||$lessCompile||$this->lessForceCompile)
+					{
+						$lessc=new lessc();
+						$lessc->setFormatter($this->lessFormatter);
+						$lessCache=$lessc->cachedCompile($src);
+						file_put_contents($path,$lessCache['compiled']);
+						Yii::app()->cache->set('EAssetManager-less-updated-'.$src,$lessCache['files']);
+					}
 				}
 			}
 		}
