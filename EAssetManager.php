@@ -154,7 +154,7 @@ class EAssetManager extends CAssetManager
 			$lessc=new lessc();
 			$lessc->setFormatter($this->lessFormatter);
 			$lessCache=$lessc->cachedCompile($src);
-			file_put_contents($path,$lessCache['compiled']);
+			file_put_contents($path,$lessCache['compiled'],LOCK_EX);
 			$this->_cacheSet('EAssetManager-less-updated-'.$src,$lessCache['files']);
 		}
 		return $path;
@@ -186,8 +186,7 @@ class EAssetManager extends CAssetManager
 		{
 			$path=$default;
 		}
-		$alias=YiiBase::getPathOfAlias($path);
-		if ($alias)
+		if (($alias=YiiBase::getPathOfAlias($path))!==false)
 		{
 			return $alias;
 		}
@@ -195,6 +194,7 @@ class EAssetManager extends CAssetManager
 		{
 			return $path;
 		}
+		return false;
 	}
 
 
