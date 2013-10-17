@@ -39,7 +39,6 @@ See code of EAssetManager.php to read description of public properties.
 
 4. CHMOD 'lessCompiledPath' directory to 777 in order to create new files there by EAssetManager.
 5. Optional: enable Yii caching. Otherwise, EAssetManager will try to create directory /protected/extensions/EAssetManager/cache/ and store cache data there.
-In this case plese ensure that directory /protected/extensions/EAssetManager/cache/ has CHMOD 777.
 
 
 USAGE
@@ -60,12 +59,17 @@ Next, add already compiled file in your application:
 
 $css = CHtml::asset(Yii::app()->basePath.'/assets/css/bootstrap.css');
 
-
 */
 
 
 class EAssetManager extends CAssetManager
 {
+
+	// default cache path for EAssetManager. It will be used if Yii caching is not enabled.
+	public $cachePath=null;
+
+	// path and file name of lessc.inc.php . Defaults to ./EAssetManager/cache
+	public $lessLib=null;
 
 	// path to store compiled css files
 	// defaults to 'application.assets.css'
@@ -88,15 +92,19 @@ class EAssetManager extends CAssetManager
 
 	public function init()
 	{
+		if (!Yii::app()->cache)
+		{
+			$this->cachePath=$this->_getPath($this->cachePath,dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'cache');
+		}
 		if ($this->lessCompile)
 		{
-			require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'lessc.inc.php');
+			if (!$this->lessLib)
+			{
+				$this->lessLib=dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'lessc.inc.php';
+			}
+			require_once($this->lessLib);
+			$this->lessCompiledPath=$this->_getPath($this->lessCompiledPath,'application.assets.css');
 		}
-		if (!$this->lessCompiledPath)
-		{
-			$this->lessCompiledPath='application.assets.css';
-		}
-		$this->lessCompiledPath=$this->_getPath($this->lessCompiledPath);
 		parent::init();
 	}
 
@@ -153,20 +161,39 @@ class EAssetManager extends CAssetManager
 	}
 
 
-	private function _getPath($path)
+
+	private function _chkDir($path)
 	{
+		if (file_exists($path))
+		{
+			return realpath($path);
+		}
+		if (mkdir($path,0777,true))
+		{
+			return realpath($path);
+		}
+		return false;
+	}
+
+
+	private function _getPath($path,$default=null)
+	{
+		if ($default===null)
+		{
+			$default=dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager';
+		}
+		if ($path===null)
+		{
+			$path=$default;
+		}
 		$alias=YiiBase::getPathOfAlias($path);
 		if ($alias)
 		{
 			return $alias;
 		}
-		elseif (realpath($path)!==false)
+		if (($path=$this->_chkDir($path))!==false||($path=$this->_chkDir($default))!==false)
 		{
-			return realpath($path);
-		}
-		else
-		{
-			return realpath(Yii::app()->basePath.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'assets');
+			return $path;
 		}
 	}
 
@@ -177,11 +204,7 @@ class EAssetManager extends CAssetManager
 		{
 			return Yii::app()->cache->set($name,$value);
 		}
-		if (!file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'cache'))
-		{
-			mkdir(dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'cache');
-		}
-		return file_put_contents(dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.md5($name).'.bin',serialize($value),LOCK_EX);
+		return file_put_contents($this->cachePath.DIRECTORY_SEPARATOR.md5($name).'.bin',serialize($value),LOCK_EX);
 	}
 
 
@@ -191,9 +214,9 @@ class EAssetManager extends CAssetManager
 		{
 			return Yii::app()->cache->get($name);
 		}
-		if (file_exists(dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.md5($name)))
+		if (file_exists($this->cachePath.DIRECTORY_SEPARATOR.md5($name).'.bin'))
 		{
-			return unserialize(file_get_contents(dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'cache'.DIRECTORY_SEPARATOR.md5($name).'.bin'));
+			return unserialize(file_get_contents($this->cachePath.DIRECTORY_SEPARATOR.md5($name).'.bin'));
 		}
 		return false;
 	}
