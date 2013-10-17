@@ -5,7 +5,7 @@ Compiles .less file(s) on-the-fly and publishes output .css file
  
 Author: Inpassor <inpassor@gmail.com>
 Link: https://github.com/Inpassor/yii-EAssetManager
-Version: 0.2 (2013.10.16)
+Version: 0.21 (2013.10.17)
 
 
 INSTALLATION
@@ -35,7 +35,6 @@ See code of EAssetManager.php to read description of public properties.
 
 4. CHMOD 'lessCompiledPath' directory to 777 in order to create new files there by EAssetManager.
 5. Optional: enable Yii caching. Otherwise, EAssetManager will try to create directory /protected/extensions/EAssetManager/cache/ and store cache data there.
-In this case plese ensure that directory /protected/extensions/EAssetManager/cache/ has CHMOD 777.
 
 
 USAGE
