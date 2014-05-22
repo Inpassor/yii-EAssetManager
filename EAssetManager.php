@@ -100,7 +100,7 @@ class EAssetManager extends CAssetManager
 	{
 		if (!Yii::app()->cache)
 		{
-			$this->cachePath=CHelper::getPath($this->cachePath,Yii::app()->basePath.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'cache',true);
+			$this->cachePath=$this->_getPath($this->cachePath,Yii::app()->basePath.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'cache',true);
 		}
 		if ($this->lessCompile)
 		{
@@ -109,7 +109,7 @@ class EAssetManager extends CAssetManager
 				$this->lessLib=dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'lessc.inc.php';
 			}
 			require_once($this->lessLib);
-			$this->lessCompiledPath=CHelper::getPath($this->lessCompiledPath,'application.assets.css',true);
+			$this->lessCompiledPath=$this->_getPath($this->lessCompiledPath,'application.assets.css',true);
 		}
 		parent::init();
 	}
@@ -164,6 +164,40 @@ class EAssetManager extends CAssetManager
 			$this->_cacheSet('EAssetManager-less-updated-'.$src,$lessCache['files']);
 		}
 		return $path;
+	}
+
+
+	private function _chkDir($dir,$create)
+	{
+		if (($alias=YiiBase::getPathOfAlias($dir)))
+		{
+			return $alias;
+		}
+		if (!file_exists($dir)&&$create)
+		{
+			mkdir($dir,0777,true);
+		}
+		if (file_exists($dir))
+		{
+			return $dir;
+		}
+		return false;
+	}
+	private function _getPath($path,$default=null,$createDir=false)
+	{
+		if ($default===null)
+		{
+			$default=dirname(__FILE__);
+		}
+		if ($path===null)
+		{
+			$path=$default;
+		}
+		if (!($ret=this->_chkDir($path,$createDir)))
+		{
+			$ret=$this->_chkDir($default,$createDir);
+		}
+		return $ret;
 	}
 
 
