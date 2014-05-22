@@ -8,7 +8,7 @@
  * @author Inpassor <inpassor@gmail.com>
  * @link https://github.com/Inpassor/yii-EAssetManager
  *
- * @version 0.22 (2013.10.18)
+ * @version 0.3.0 (2013.10.24)
  */
 
 /*
@@ -100,7 +100,7 @@ class EAssetManager extends CAssetManager
 	{
 		if (!Yii::app()->cache)
 		{
-			$this->cachePath=$this->_getPath($this->cachePath,Yii::app()->basePath.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'cache');
+			$this->cachePath=CHelper::getPath($this->cachePath,Yii::app()->basePath.DIRECTORY_SEPARATOR.'runtime'.DIRECTORY_SEPARATOR.'cache',true);
 		}
 		if ($this->lessCompile)
 		{
@@ -109,7 +109,7 @@ class EAssetManager extends CAssetManager
 				$this->lessLib=dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'lessc.inc.php';
 			}
 			require_once($this->lessLib);
-			$this->lessCompiledPath=$this->_getPath($this->lessCompiledPath,'application.assets.css');
+			$this->lessCompiledPath=CHelper::getPath($this->lessCompiledPath,'application.assets.css',true);
 		}
 		parent::init();
 	}
@@ -164,43 +164,6 @@ class EAssetManager extends CAssetManager
 			$this->_cacheSet('EAssetManager-less-updated-'.$src,$lessCache['files']);
 		}
 		return $path;
-	}
-
-
-
-	private function _chkDir($path)
-	{
-		if (file_exists($path))
-		{
-			return realpath($path);
-		}
-		if (mkdir($path,0777,true))
-		{
-			return realpath($path);
-		}
-		return false;
-	}
-
-
-	private function _getPath($path,$default=null)
-	{
-		if ($default===null)
-		{
-			$default=dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager';
-		}
-		if ($path===null)
-		{
-			$path=$default;
-		}
-		if (($alias=YiiBase::getPathOfAlias($path))!==false)
-		{
-			return $alias;
-		}
-		if (($path=$this->_chkDir($path))!==false||($path=$this->_chkDir($default))!==false)
-		{
-			return $path;
-		}
-		return false;
 	}
 
 
