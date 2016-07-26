@@ -1,0 +1,7 @@
+{
+    "name": "Inpassor/yii-EAssetManager",
+    "description": "Extended Asset Manager Compiles .less file(s) on-the-fly and publishes output .css file",
+    "require": {
+        "php": "^5.3.3 || ^7.0"
+    }
+}
