@@ -5,7 +5,7 @@ Compiles .less file(s) on-the-fly and publishes output .css file
  
 Author: Inpassor <inpassor@yandex.com> .
 Link: https://github.com/Inpassor/yii-EAssetManager .
-Version: 0.22 (2013.10.18) .
+Version: 0.3 (2013.10.24) .
 
 
 INSTALLATION

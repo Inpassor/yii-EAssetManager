@@ -8,7 +8,7 @@
  * @author Inpassor <inpassor@yandex.com>
  * @link https://github.com/Inpassor/yii-EAssetManager
  *
- * @version 0.3.0 (2013.10.24)
+ * @version 0.3 (2013.10.24)
  */
 /*
 
