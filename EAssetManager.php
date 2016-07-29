@@ -5,7 +5,7 @@
  * Extended Asset Manager
  * Compiles .less file(s) on-the-fly and publishes output .css file
  *
- * @author Inpassor <inpassor@gmail.com>
+ * @author Inpassor <inpassor@yandex.com>
  * @link https://github.com/Inpassor/yii-EAssetManager
  *
  * @version 0.3.0 (2013.10.24)
@@ -16,8 +16,7 @@
 INSTALLATION
 
 1. Copy EAssetManager.php to /protected/extensions/ directory
-2. Download the latest version of lessphp from http://leafo.net/lessphp and put lessc.inc.php file under /protected/extensions/EAssetManager/ directory
-3. Add or replace the assetManager component in /protected/config/main.php like that:
+2. Add or replace the assetManager component in /protected/config/main.php like that:
 
 	'components'=>array(
 
@@ -37,8 +36,8 @@ INSTALLATION
 
 See code of EAssetManager.php to read description of public properties.
 
-4. CHMOD 'lessCompiledPath' directory to 777 in order to create new files there by EAssetManager.
-5. Optional: enable Yii caching. Otherwise, EAssetManager will create (or use existing) directory /protected/runtime/cache/ and store cache data there.
+3. CHMOD 'lessCompiledPath' directory to 777 in order to create new files there by EAssetManager.
+4. Optional: enable Yii caching. Otherwise, EAssetManager will create (or use existing) directory /protected/runtime/cache/ and store cache data there.
 You can override this path by setting public property 'cachePath'.
 
 
@@ -59,10 +58,6 @@ Yii::app()->assetManager->lessCompile(Yii::app()->basePath.'/vendors/bootstrap/l
 Output .css file will be stored under 'lessCompiledPath' directory.
 And then add already compiled file in your application:
 
-$css = CHtml::asset(Yii::app()->basePath.'/assets/css/bootstrap.css');
-
-or
-
 $css = CHtml::asset(Yii::app()->assetManager->lessCompiledPath.'/bootstrap.css');
 
 */
@@ -74,7 +69,7 @@ class EAssetManager extends CAssetManager
 	// default cache path for EAssetManager. It will be used if Yii caching is not enabled.
 	public $cachePath=null;
 
-	// path and file name of lessc.inc.php . Defaults to ./EAssetManager/cache
+	// path and file name of lessc.inc.php .
 	public $lessLib=null;
 
 	// path to store compiled css files
@@ -106,7 +101,7 @@ class EAssetManager extends CAssetManager
 		{
 			if (!$this->lessLib)
 			{
-				$this->lessLib=dirname(__FILE__).DIRECTORY_SEPARATOR.'EAssetManager'.DIRECTORY_SEPARATOR.'lessc.inc.php';
+				$this->lessLib=Yii::getPathOfAlias('ext').DIRECTORY_SEPARATOR.'leafo'.DIRECTORY_SEPARATOR.'lessphp'.DIRECTORY_SEPARATOR.'lessc.inc.php';
 			}
 			require_once($this->lessLib);
 			$this->lessCompiledPath=$this->_getPath($this->lessCompiledPath,'application.assets.css',true);
