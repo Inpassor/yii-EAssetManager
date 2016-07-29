@@ -11,9 +11,18 @@ Version: 0.3 (2013.10.24) .
 INSTALLATION
 ============
 
-1. Copy EAssetManager.php to /protected/extensions/ directory
+##Install with composer:
+
+```
+composer require inpassor/yii-eassetmanager
+```
+
+##Manual install:
+
+1. Copy EAssetManager.php to /protected/vendor/ directory
 2. Add or replace the assetManager component in /protected/config/main.php like that:
 
+```
 	'components'=>array(
 
 		...
@@ -29,6 +38,7 @@ INSTALLATION
 		...
 
 	),
+```
 
 See code of EAssetManager.php to read description of public properties.
 
@@ -42,7 +52,9 @@ USAGE
 
 Just publish .less file with assetManager like that:
 
+```
 $css = CHtml::asset(Yii::app()->basePath.'/vendors/bootstrap/less/bootstrap.less');
+```
 
 That's all :)
 
@@ -50,9 +62,13 @@ That's all :)
 Also it might be useful to pre-compile .less files. For example, to make command which compiles .less files in background.
 In this case you can use "lessCompile" method:
 
+```
 Yii::app()->assetManager->lessCompile(Yii::app()->basePath.'/vendors/bootstrap/less/bootstrap.less');
+```
 
 Output .css file will be stored under 'lessCompiledPath' directory.
 And then add already compiled file in your application:
 
+```
 $css = CHtml::asset(Yii::app()->assetManager->lessCompiledPath.'/bootstrap.css');
+```

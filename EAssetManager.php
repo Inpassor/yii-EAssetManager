@@ -12,9 +12,25 @@
  */
 /*
 
+EAssetManager class file.
+
+Extended Asset Manager
+Compiles .less file(s) on-the-fly and publishes output .css file
+
+Author: Inpassor <inpassor@yandex.com> .
+Link: https://github.com/Inpassor/yii-EAssetManager .
+Version: 0.3 (2013.10.24) .
+
+
 INSTALLATION
 
-1. Copy EAssetManager.php to /protected/extensions/ directory
+Install with composer:
+
+composer require inpassor/yii-eassetmanager
+
+Manual install:
+
+1. Copy EAssetManager.php to /protected/vendor/ directory
 2. Add or replace the assetManager component in /protected/config/main.php like that:
 
 	'components'=>array(
@@ -35,7 +51,7 @@ INSTALLATION
 
 See code of EAssetManager.php to read description of public properties.
 
-3. CHMOD 'lessCompiledPath' directory to 777 in order to create new files there by EAssetManager.
+3. CHMOD 'lessCompiledPath' directory to 0777 in order to create new files there by EAssetManager.
 4. Optional: enable Yii caching. Otherwise, EAssetManager will create (or use existing) directory /protected/runtime/cache/ and store cache data there.
 You can override this path by setting public property 'cachePath'.
 
@@ -61,33 +77,45 @@ $css = CHtml::asset(Yii::app()->assetManager->lessCompiledPath.'/bootstrap.css')
 
 */
 
-
 class EAssetManager extends CAssetManager
 {
 
-    // default cache path for EAssetManager. It will be used if Yii caching is not enabled.
+    /**
+     * @var string default cache path for EAssetManager. It will be used if Yii caching is not enabled.
+     */
     public $cachePath = null;
 
-    // path to store compiled css files
-    // defaults to 'application.assets.css'
-    // note that this path must be writtable by script (CHMOD 777)
+    /**
+     * @var string path to store compiled css files. Defaults to 'application.assets.css'.
+     * Note that this path must be writtable by script (CHMOD 777)
+     */
     public $lessCompiledPath = null;
 
-    // compiled output formatter
-    // accepted values: 'lessjs' , 'compressed' , 'classic'
-    // defaults to 'lessjs'
-    // read http://leafo.net/lessphp/docs/#output_formatting for details
+    /**
+     * @var string compiled output formatter. Accepted values: 'lessjs' , 'compressed' , 'classic' . Defaults to 'lessjs'.
+     * Read http://leafo.net/lessphp/docs/#output_formatting for details.
+     */
     public $lessFormatter = 'lessjs';
 
-    // passing in true will cause the input to always be recompiled
+    /**
+     * @var bool passing in true will cause the input to always be recompiled.
+     */
     public $lessForceCompile = false;
 
-    // if set to false, .less to .css compilation will be done ONLY if output .css file not found
-    // otherwise existing .css file will be used
+    /**
+     * @var bool if set to false, .less to .css compilation will be done ONLY if output .css file not found.
+     * Otherwise existing .css file will be used
+     */
     public $lessCompile = true;
 
+    /**
+     * @var lessc
+     */
     protected $_lessc = null;
 
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         if (!Yii::app()->cache) {
@@ -99,7 +127,13 @@ class EAssetManager extends CAssetManager
         parent::init();
     }
 
-
+    /**
+     * @param string $path
+     * @param bool $hashByName
+     * @param int $level
+     * @param null $forceCopy
+     * @return mixed
+     */
     public function publish($path, $hashByName = false, $level = -1, $forceCopy = null)
     {
         if (($src = realpath($path)) !== false) {
@@ -112,7 +146,10 @@ class EAssetManager extends CAssetManager
         return parent::publish($path, $hashByName, $level, $forceCopy);
     }
 
-
+    /**
+     * @param string $src
+     * @return string
+     */
     public function lessCompile($src)
     {
         $path = $this->lessCompiledPath . DIRECTORY_SEPARATOR . basename($src, '.less') . '.css';
@@ -143,8 +180,12 @@ class EAssetManager extends CAssetManager
         return $path;
     }
 
-
-    private function _chkDir($dir, $create)
+    /**
+     * @param string $dir
+     * @param bool $create
+     * @return bool
+     */
+    protected function _chkDir($dir, $create)
     {
         if (($alias = Yii::getPathOfAlias($dir))) {
             return $alias;
@@ -158,7 +199,13 @@ class EAssetManager extends CAssetManager
         return false;
     }
 
-    private function _getPath($path, $default = null, $createDir = false)
+    /**
+     * @param string $path
+     * @param null $default
+     * @param bool $createDir
+     * @return bool
+     */
+    protected function _getPath($path, $default = null, $createDir = false)
     {
         if ($default === null) {
             $default = dirname(__FILE__);
@@ -172,8 +219,12 @@ class EAssetManager extends CAssetManager
         return $ret;
     }
 
-
-    private function _cacheSet($name, $value)
+    /**
+     * @param string $name
+     * @param mixed $value
+     * @return int
+     */
+    protected function _cacheSet($name, $value)
     {
         if (Yii::app()->cache) {
             return Yii::app()->cache->set($name, $value);
@@ -181,8 +232,11 @@ class EAssetManager extends CAssetManager
         return file_put_contents($this->cachePath . DIRECTORY_SEPARATOR . md5($name) . '.bin', serialize($value), LOCK_EX);
     }
 
-
-    private function _cacheGet($name)
+    /**
+     * @param string $name
+     * @return bool|mixed
+     */
+    protected function _cacheGet($name)
     {
         if (Yii::app()->cache) {
             return Yii::app()->cache->get($name);
