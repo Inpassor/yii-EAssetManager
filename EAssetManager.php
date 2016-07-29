@@ -68,9 +68,6 @@ class EAssetManager extends CAssetManager
     // default cache path for EAssetManager. It will be used if Yii caching is not enabled.
     public $cachePath = null;
 
-    // path and file name of lessc.inc.php .
-    public $lessLib = null;
-
     // path to store compiled css files
     // defaults to 'application.assets.css'
     // note that this path must be writtable by script (CHMOD 777)
@@ -89,6 +86,7 @@ class EAssetManager extends CAssetManager
     // otherwise existing .css file will be used
     public $lessCompile = true;
 
+    protected $_lessc = null;
 
     public function init()
     {
@@ -96,10 +94,6 @@ class EAssetManager extends CAssetManager
             $this->cachePath = $this->_getPath($this->cachePath, Yii::app()->basePath . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'cache', true);
         }
         if ($this->lessCompile) {
-            if (!$this->lessLib) {
-                $this->lessLib = Yii::getPathOfAlias('ext') . DIRECTORY_SEPARATOR . 'leafo' . DIRECTORY_SEPARATOR . 'lessphp' . DIRECTORY_SEPARATOR . 'lessc.inc.php';
-            }
-            require_once($this->lessLib);
             $this->lessCompiledPath = $this->_getPath($this->lessCompiledPath, 'application.assets.css', true);
         }
         parent::init();
@@ -138,9 +132,11 @@ class EAssetManager extends CAssetManager
             unset($lessFiles);
         }
         if (!file_exists($path) || $lessCompile || $this->lessForceCompile) {
-            $lessc = new lessc();
-            $lessc->setFormatter($this->lessFormatter);
-            $lessCache = $lessc->cachedCompile($src);
+            if (!$this->_lessc) {
+                $this->_lessc = new \leafo\lessphp\lessc();
+            }
+            $this->_lessc->setFormatter($this->lessFormatter);
+            $lessCache = $this->_lessc->cachedCompile($src);
             file_put_contents($path, $lessCache['compiled'], LOCK_EX);
             $this->_cacheSet('EAssetManager-less-updated-' . $src, $lessCache['files']);
         }
@@ -170,12 +166,11 @@ class EAssetManager extends CAssetManager
         if ($path === null) {
             $path = $default;
         }
-        if (!($ret = $this->_chkDir($path, $createDir)))
-		{
+        if (!($ret = $this->_chkDir($path, $createDir))) {
             $ret = $this->_chkDir($default, $createDir);
         }
-		return $ret;
-	}
+        return $ret;
+    }
 
 
     private function _cacheSet($name, $value)
