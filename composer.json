@@ -1,6 +1,7 @@
 {
     "name": "inpassor/yii-eassetmanager",
     "description": "Extended Asset Manager Compiles .less file(s) on-the-fly and publishes output .css file",
+    "keywords": ["yii","asset","manager","less","css"],
     "license": "MIT",
     "authors": [
         {
