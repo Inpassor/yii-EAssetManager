@@ -133,7 +133,7 @@ class EAssetManager extends CAssetManager
         }
         if (!file_exists($path) || $lessCompile || $this->lessForceCompile) {
             if (!$this->_lessc) {
-                $this->_lessc = new \leafo\lessphp\lessc();
+                $this->_lessc = new lessc();
             }
             $this->_lessc->setFormatter($this->lessFormatter);
             $lessCache = $this->_lessc->cachedCompile($src);
